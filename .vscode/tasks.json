@@ -191,10 +191,10 @@
         {
             "label": "Run Debug",
             "type": "shell",
-            "command": "${workspaceFolder}/build/debug/CppCMakeVSCodeTemplate",
+            "command": "${workspaceFolder}/build/debug/ShortestPathQueueStudy",
             "args": [],
             "windows": {
-                "command": "${workspaceFolder}/build/debug/CppCMakeVSCodeTemplate.exe",
+                "command": "${workspaceFolder}/build/debug/ShortestPathQueueStudy.exe",
                 "args": [],
                 "options": {
                     "cwd": "${workspaceFolder}",
@@ -204,7 +204,7 @@
                 }
             },
             "linux": {
-                "command": "${workspaceFolder}/build/debug/CppCMakeVSCodeTemplate",
+                "command": "${workspaceFolder}/build/debug/ShortestPathQueueStudy",
                 "args": [],
                 "options": {
                     "cwd": "${workspaceFolder}"
