@@ -1,0 +1,13 @@
+{
+    "cmake.configureOnOpen": false,
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.default.cStandard": "c23",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/src"
+    ],
+    "files.associations": {
+        "*.hpp": "cpp",
+        "*.cpp": "cpp"
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "MSYS2 UCRT64",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/src",
+                "C:/msys64/ucrt64/include"
+            ],
+            "defines": [],
+            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "cStandard": "c23",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "windows-gcc-x64"
+        },
+        {
+            "name": "Linux GCC",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/src"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c23",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,32 @@
+# Build artifacts
+build/
+bin/
+tmp/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# Local binaries / objects
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.pdb
+
+# Logs
+*.log
+
+# VS / VS Code local machine noise
+.vs/
+.vscode/ipch/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
