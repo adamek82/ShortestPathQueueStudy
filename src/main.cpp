@@ -47,10 +47,10 @@ void printResult(const spq::SearchResult& result) {
 }
 
 void runReference() {
-    spq::Grid grid = spq::referenceGrid20x20MaxQueue126();
+    spq::Grid grid = spq::referenceGrid20x20MaxQueue127();
     spq::BfsStats stats = spq::analyzeShortestPathBinaryMatrix(grid);
 
-    std::cout << "=== Reference 20x20 grid, max queue 126 ===\n";
+    std::cout << "=== Reference 20x20 grid, max queue 127 ===\n";
     printStats(grid, stats);
 
     std::cout << "\nGrid view:\n";
