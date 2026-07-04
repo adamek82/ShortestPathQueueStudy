@@ -19,16 +19,6 @@ int scoreStats(const BfsStats& stats, bool requireReachable) {
     return stats.maxQueueSize;
 }
 
-bool isBetter(const SearchResult& lhs, const SearchResult& rhs) {
-    if (lhs.score != rhs.score)
-        return lhs.score > rhs.score;
-
-    if (lhs.stats.shortestPath != rhs.stats.shortestPath)
-        return lhs.stats.shortestPath > rhs.stats.shortestPath;
-
-    return lhs.stats.visitedCells > rhs.stats.visitedCells;
-}
-
 unsigned int effectiveSeed(unsigned int seed) {
     if (seed != 0)
         return seed;
@@ -50,6 +40,25 @@ void validateConfig(const SearchConfig& config) {
         throw std::invalid_argument("density must be in [0, 1]");
 }
 
+void publishProgress(const SearchConfig& config) {
+    if (config.progressCallback)
+        config.progressCallback(1);
+}
+
+void publishBest(const SearchConfig& config, const SearchResult& best) {
+    if (config.bestCallback)
+        config.bestCallback(best);
+}
+
+void considerBest(const SearchResult& candidate, SearchResult& best,
+                  const SearchConfig& config) {
+    if (!isBetterSearchResult(candidate, best))
+        return;
+
+    best = candidate;
+    publishBest(config, best);
+}
+
 SearchResult evaluateGrid(Grid grid, bool requireReachable, int restart, int iteration,
                           unsigned int seed) {
     SearchResult result;
@@ -69,8 +78,8 @@ SearchResult makeInitialCandidate(const SearchConfig& config, std::mt19937& rng,
     constexpr int kAttempts = 1000;
     for (int attempt = 0; attempt < kAttempts; ++attempt) {
         Grid grid = makeRandomGrid(config.n, config.initialBlockProbability, rng);
-        SearchResult candidate = evaluateGrid(std::move(grid), config.requireReachable, restart, 0,
-                                              seed);
+        SearchResult candidate = evaluateGrid(std::move(grid), config.requireReachable,
+                                              restart, 0, seed);
 
         last = candidate;
 
@@ -114,8 +123,7 @@ public:
             return;
 
         const auto now = std::chrono::steady_clock::now();
-        const double elapsed =
-            std::chrono::duration<double>(now - start_).count();
+        const double elapsed = std::chrono::duration<double>(now - start_).count();
 
         const double ratio = done > 0 ? static_cast<double>(done) / totalIterations_ : 0.0;
         const double totalEstimate = ratio > 0.0 ? elapsed / ratio : 0.0;
@@ -152,6 +160,16 @@ double temperatureAt(const AnnealingConfig& config, int iteration) {
 
 } // namespace
 
+bool isBetterSearchResult(const SearchResult& lhs, const SearchResult& rhs) {
+    if (lhs.score != rhs.score)
+        return lhs.score > rhs.score;
+
+    if (lhs.stats.shortestPath != rhs.stats.shortestPath)
+        return lhs.stats.shortestPath > rhs.stats.shortestPath;
+
+    return lhs.stats.visitedCells > rhs.stats.visitedCells;
+}
+
 SearchResult randomSearch(const SearchConfig& config) {
     validateConfig(config);
 
@@ -167,16 +185,18 @@ SearchResult randomSearch(const SearchConfig& config) {
     int done = 0;
 
     for (int restart = 1; restart <= config.restarts; ++restart) {
+        const int reportedRestart = config.restartOffset + restart;
+
         for (int iteration = 1; iteration <= config.iterations; ++iteration) {
             Grid grid = makeRandomGrid(config.n, config.initialBlockProbability, rng);
             SearchResult candidate = evaluateGrid(std::move(grid), config.requireReachable,
-                                                  restart, iteration, seed);
+                                                  reportedRestart, iteration, seed);
 
-            if (isBetter(candidate, best))
-                best = candidate;
+            considerBest(candidate, best, config);
 
             ++done;
-            progress.maybePrint(done, best, candidate.score, restart, iteration);
+            publishProgress(config);
+            progress.maybePrint(done, best, candidate.score, reportedRestart, iteration);
         }
     }
 
@@ -198,10 +218,10 @@ SearchResult hillClimb(const SearchConfig& config) {
     int done = 0;
 
     for (int restart = 1; restart <= config.restarts; ++restart) {
-        SearchResult current = makeInitialCandidate(config, rng, seed, restart);
+        const int reportedRestart = config.restartOffset + restart;
+        SearchResult current = makeInitialCandidate(config, rng, seed, reportedRestart);
 
-        if (isBetter(current, best))
-            best = current;
+        considerBest(current, best, config);
 
         for (int iteration = 1; iteration <= config.iterations; ++iteration) {
             Grid candidateGrid = current.grid;
@@ -210,17 +230,19 @@ SearchResult hillClimb(const SearchConfig& config) {
             flipCell(candidateGrid, r, c);
 
             SearchResult candidate = evaluateGrid(std::move(candidateGrid),
-                                                  config.requireReachable, restart, iteration,
+                                                  config.requireReachable,
+                                                  reportedRestart,
+                                                  iteration,
                                                   seed);
 
             if (candidate.score >= current.score)
                 current = candidate;
 
-            if (isBetter(current, best))
-                best = current;
+            considerBest(current, best, config);
 
             ++done;
-            progress.maybePrint(done, best, current.score, restart, iteration);
+            publishProgress(config);
+            progress.maybePrint(done, best, current.score, reportedRestart, iteration);
         }
     }
 
@@ -246,10 +268,10 @@ SearchResult simulatedAnnealing(const AnnealingConfig& config) {
     int done = 0;
 
     for (int restart = 1; restart <= config.restarts; ++restart) {
-        SearchResult current = makeInitialCandidate(config, rng, seed, restart);
+        const int reportedRestart = config.restartOffset + restart;
+        SearchResult current = makeInitialCandidate(config, rng, seed, reportedRestart);
 
-        if (isBetter(current, best))
-            best = current;
+        considerBest(current, best, config);
 
         for (int iteration = 1; iteration <= config.iterations; ++iteration) {
             Grid candidateGrid = current.grid;
@@ -258,7 +280,9 @@ SearchResult simulatedAnnealing(const AnnealingConfig& config) {
             flipCell(candidateGrid, r, c);
 
             SearchResult candidate = evaluateGrid(std::move(candidateGrid),
-                                                  config.requireReachable, restart, iteration,
+                                                  config.requireReachable,
+                                                  reportedRestart,
+                                                  iteration,
                                                   seed);
 
             const int delta = candidate.score - current.score;
@@ -273,11 +297,11 @@ SearchResult simulatedAnnealing(const AnnealingConfig& config) {
             if (accept)
                 current = candidate;
 
-            if (isBetter(current, best))
-                best = current;
+            considerBest(current, best, config);
 
             ++done;
-            progress.maybePrint(done, best, current.score, restart, iteration);
+            publishProgress(config);
+            progress.maybePrint(done, best, current.score, reportedRestart, iteration);
         }
     }
 

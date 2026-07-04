@@ -13,6 +13,7 @@ struct ProgramOptions {
     int n{20};
     int iterations{100000};
     int restarts{10};
+    int threads{1};
     double density{0.35};
     bool requireReachable{true};
     int progressEvery{10000};

@@ -15,6 +15,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 
+find_package(Threads REQUIRED)
+
 add_executable(${APP_NAME}
     "${SRC_DIR}/main.cpp"
     "${SRC_DIR}/bfs.cpp"
@@ -22,6 +24,7 @@ add_executable(${APP_NAME}
     "${SRC_DIR}/reference_grids.cpp"
     "${SRC_DIR}/search.cpp"
     "${SRC_DIR}/cli.cpp"
+    "${SRC_DIR}/runner.cpp"
 )
 
 target_include_directories(${APP_NAME}
@@ -33,6 +36,11 @@ target_compile_options(${APP_NAME}
     PRIVATE
         $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic -Werror>
         $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+)
+
+target_link_libraries(${APP_NAME}
+    PRIVATE
+        Threads::Threads
 )
 
 if (CMAKE_BUILD_TYPE)

@@ -1,6 +1,7 @@
 #include "cli.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -34,6 +35,15 @@ bool parseBool(const std::string& value) {
     throw std::runtime_error("Invalid boolean value: " + value);
 }
 
+int parseThreads(const std::string& value) {
+    const std::string v = lower(value);
+
+    if (v == "auto")
+        return 0;
+
+    return std::stoi(value);
+}
+
 } // namespace
 
 ProgramOptions parseArgs(int argc, char** argv) {
@@ -52,6 +62,8 @@ ProgramOptions parseArgs(int argc, char** argv) {
             options.iterations = std::stoi(takeValue(i, argc, argv, arg));
         } else if (arg == "--restarts") {
             options.restarts = std::stoi(takeValue(i, argc, argv, arg));
+        } else if (arg == "--threads") {
+            options.threads = parseThreads(takeValue(i, argc, argv, arg));
         } else if (arg == "--density") {
             options.density = std::stod(takeValue(i, argc, argv, arg));
         } else if (arg == "--seed") {
@@ -119,6 +131,7 @@ void printUsage(std::ostream& out, const char* programName) {
         << "  --n N                         Grid size. Default: 20\n"
         << "  --iterations N                Iterations per restart. Default: 100000\n"
         << "  --restarts N                  Number of restarts. Default: 10\n"
+        << "  --threads N|auto              Worker threads. Default: 1. Use 0 or auto to autodetect.\n"
         << "  --density P                   Initial obstacle probability. Default: 0.35\n"
         << "  --seed N                      RNG seed. Default: random_device\n"
         << "  --progress-every N            Progress print interval. Default: 10000\n"
@@ -131,8 +144,8 @@ void printUsage(std::ostream& out, const char* programName) {
         << "Examples:\n"
         << "  " << programName << " --mode ref\n"
         << "  " << programName << " --mode hill --n 20 --iterations 200000 --seed 123\n"
-        << "  " << programName
-        << " --mode anneal --n 30 --iterations 500000 --density 0.35\n";
+        << "  " << programName << " --mode anneal --n 30 --iterations 500000 --density 0.35\n"
+        << "  " << programName << " --mode anneal --n 30 --iterations 500000 --threads auto\n";
 }
 
 } // namespace spq

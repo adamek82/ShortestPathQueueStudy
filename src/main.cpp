@@ -2,6 +2,7 @@
 #include "cli.hpp"
 #include "grid.hpp"
 #include "reference_grids.hpp"
+#include "runner.hpp"
 #include "search.hpp"
 
 #include <exception>
@@ -75,21 +76,11 @@ int main(int argc, char** argv) {
             return 0;
         }
 
-        if (options.mode == "random") {
-            spq::SearchResult result = spq::randomSearch(spq::makeSearchConfig(options));
-            printResult(result);
-            return 0;
-        }
+        if (options.mode == "random" || options.mode == "hill" || options.mode == "anneal") {
+            const spq::SearchMode mode = spq::parseSearchMode(options.mode);
+            spq::AnnealingConfig config = spq::makeAnnealingConfig(options);
 
-        if (options.mode == "hill") {
-            spq::SearchResult result = spq::hillClimb(spq::makeSearchConfig(options));
-            printResult(result);
-            return 0;
-        }
-
-        if (options.mode == "anneal") {
-            spq::SearchResult result =
-                spq::simulatedAnnealing(spq::makeAnnealingConfig(options));
+            spq::SearchResult result = spq::runParallel(mode, config, options.threads);
             printResult(result);
             return 0;
         }
