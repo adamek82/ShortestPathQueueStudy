@@ -4,6 +4,6 @@
 
 namespace spq {
 
-Grid referenceGrid20x20MaxQueue127();
+Grid referenceGrid20x20MaxQueue128();
 
 } // namespace spq
