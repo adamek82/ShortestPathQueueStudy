@@ -63,6 +63,8 @@ void runReference() {
 } // namespace
 
 int main(int argc, char** argv) {
+    std::cout << std::unitbuf;
+
     try {
         const spq::ProgramOptions options = spq::parseArgs(argc, argv);
 
